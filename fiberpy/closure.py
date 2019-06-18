@@ -1,5 +1,7 @@
-import numpy as np
 from itertools import permutations
+
+import numpy as np
+
 from .tensor import Mat4
 
 
@@ -239,12 +241,13 @@ def A4_orthotropic(a):
         a (array_like of shape (3,)): fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        A4 (array of shape (6, 6)): 4th-order orientation tensor using the :math:`(\phi,\phi)` bases
+
+    Reference:
+        VerWeyst, B. E. Numerical predictions of flow-induced fiber orientation in three-dimensional geometries. University of Illinois at Urbana-Champaign, 1998
     """
 
-    # Fitted coefficients
-    # See pp. 47 of "Numerical predictions of flow-induced fiber orientation
-    # in three-dimensional geometries"
+    # Fitted coefficients (pp. 47)
     C = np.array(
         [
             [

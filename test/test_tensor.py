@@ -1,5 +1,6 @@
 import numpy as np
-from fiberpy.tensor import Mat4, Mat2, Mat22, ij2M, ijkl2MN, MatPG, MatGP
+
+from fiberpy.tensor import Mat2, Mat4, Mat22, MatGP, MatPG, ij2M, ijkl2MN
 
 
 def test_Mat4():

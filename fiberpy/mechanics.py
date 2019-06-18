@@ -1,4 +1,5 @@
 import numpy as np
+
 from .closure import A4_orthotropic
 from .tensor import Mat4
 
@@ -280,7 +281,7 @@ class FiberComposite:
 
 def lmbda_mu(E, nu):
     r"""
-    Convert :math:`(E, nu)` to :math:`(\lambda,\mu)`
+    Convert :math:`(E, \nu)` to :math:`(\lambda,\mu)`
     """
     lmbda = nu * E / ((1 + nu) * (1 - 2 * nu))
     mu = E / (2 * (1 + nu))
@@ -288,8 +289,8 @@ def lmbda_mu(E, nu):
 
 
 def bulk_modulus(E, nu):
-    """
-    Bulk modulus from :math:`(E, nu)`
+    r"""
+    Bulk modulus from :math:`(E, \nu)`
     """
     return E / (3 * (1 - 2 * nu))
 

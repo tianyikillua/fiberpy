@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
-from fiberpy.mechanics import FiberComposite, A2Eij
+import pytest
+
+from fiberpy.mechanics import A2Eij, FiberComposite
 
 # RVE data for Moldflow A218V50
 rve_data = {
