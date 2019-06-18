@@ -1,0 +1,324 @@
+import numpy as np
+from .closure import A4_orthotropic
+from .tensor import Mat4
+
+
+class FiberComposite:
+    """
+    Class for computing homogenized properties of a fiber-reinforced
+    composite
+
+    Inputs:
+        rve_data, dict: dictionary defining the microstructure
+    """
+
+    def __init__(self, rve_data):
+        self.rve_data = rve_data
+        self.read_rve_data()
+        self.UD = None  # unidirectional mechanical properties
+
+    def get(self, variables):
+        """
+        Retrieve the RVE variables
+        """
+        return [self.rve_data[var] for var in variables]
+
+    def read_rve_data(self):
+        """
+        Parse a RVE data defining the microstructure
+        """
+        self.E0, self.nu0 = self.get(["E0", "nu0"])
+        self.E1, self.nu1 = self.get(["E1", "nu1"])
+        self.ar = self.rve_data["aspect_ratio"]
+
+        # Volume fraction of fibers
+        if "vf" in self.rve_data:
+            self.vf = self.rve_data["vf"]
+        else:
+            assert "mf" in self.rve_data
+            mf = self.rve_data["mf"]
+            assert "rho1" in self.rve_data
+            rho1 = self.rve_data["rho1"]
+            if "rho0" in self.rve_data:
+                rho0 = self.rve_data["rho0"]
+            else:
+                assert "rho" in self.rve_data
+                rho = self.rve_data["rho"]
+                rho0 = (1 - mf) * rho * rho1 / (rho1 - rho * mf)
+            self.vf = mf * rho0 / (mf * rho0 + (1 - mf) * rho1)
+
+    def vBar(self, x0, x1):
+        """
+        Volume average
+        """
+        return x0 * (1 - self.vf) + x1 * self.vf
+
+    def Eshelby(self):
+        """
+        Eshelby's tensor from [Tandon and Weng, 1984]
+        """
+        asq = self.ar ** 2
+        asm1 = asq - 1
+        hnu = 1 / (2 * (1 - self.nu0))
+        q = self.ar / asm1 ** (3 / 2) * (self.ar * np.sqrt(asm1) - np.arccosh(self.ar))
+
+        E = np.zeros((3, 3, 3, 3))
+        E[0, 0, 0, 0] = hnu * (
+            1
+            - 2 * self.nu0
+            + (3 * asq - 1) / asm1
+            - (1 - 2 * self.nu0 + 3 * asq / asm1) * q
+        )
+        E[1, 1, 1, 1] = E[2, 2, 2, 2] = (
+            0.75 * hnu * (asq / asm1)
+            + 0.5 * hnu * (1 - 2 * self.nu0 - 9 / 4 / asm1) * q
+        )
+        E[1, 1, 2, 2] = E[2, 2, 1, 1] = (
+            0.5 * hnu * (0.5 * asq / asm1 - (1 - 2 * self.nu0 + 0.75 / asm1) * q)
+        )
+        E[1, 1, 0, 0] = E[2, 2, 0, 0] = hnu * (
+            -asq / asm1 + 0.5 * (3 * asq / asm1 - (1 - 2 * self.nu0)) * q
+        )
+        E[0, 0, 1, 1] = E[0, 0, 2, 2] = hnu * (
+            2 * self.nu0 - 1 - 1 / asm1 + (1 - 2 * self.nu0 + 1.5 / asm1) * q
+        )
+        E[1, 2, 1, 2] = E[2, 1, 2, 1] = (
+            0.5 * hnu * (0.5 * asq / asm1 + (1 - 2 * self.nu0 - 0.75 / asm1) * q)
+        )
+        E[0, 1, 0, 1] = E[0, 2, 0, 2] = (
+            0.5
+            * hnu
+            * (
+                1
+                - 2 * self.nu0
+                - (asq + 1) / asm1
+                - 0.5 * (1 - 2 * self.nu0 - 3 * (asq + 1) / asm1) * q
+            )
+        )
+        return E
+
+    def MoriTanaka(self):
+        """
+        Elasticity tensor for a unidirectional RVE using the
+        original M-T formulation
+        """
+        def H(E, C0, C1):
+            """
+            Concentration tensor H (= B according to the M-T model)
+            """
+            S0 = np.linalg.inv(C0)
+            eye = np.eye(6)
+            return np.linalg.inv(eye + E @ S0 @ (C1 - C0))
+
+        C0 = AIsotropic(self.E0, self.nu0)
+        C1 = AIsotropic(self.E1, self.nu1)
+        eye = np.eye(6)
+        E = Mat4(self.Eshelby())
+        B = H(E, C0, C1)
+        UD = (self.vf * C1 @ B + (1 - self.vf) * C0) @ (np.linalg.inv(self.vf * B + (1 - self.vf) * eye))
+        return UD
+
+    def TandonWeng(self):
+        """
+        Elasticity tensor for a unidirectional RVE using
+        Tandon-Weng's equations
+        """
+        lmbda0, mu0 = lmbda_mu(self.E0, self.nu0)
+        lmbda1, mu1 = lmbda_mu(self.E1, self.nu1)
+        E = self.Eshelby()
+
+        D1 = 1 + 2 * (mu1 - mu0) / (lmbda1 - lmbda0)
+        D2 = (lmbda0 + 2 * mu0) / (lmbda1 - lmbda0)
+        D3 = lmbda0 / (lmbda1 - lmbda0)
+        B1 = (
+            self.vf * D1 + D2 + (1 - self.vf) * (D1 * E[0, 0, 0, 0] + 2 * E[1, 1, 0, 0])
+        )
+        B2 = (
+            self.vf
+            + D3
+            + (1 - self.vf) * (D1 * E[0, 0, 1, 1] + E[1, 1, 1, 1] + E[1, 1, 2, 2])
+        )
+        B3 = self.vf + D3 + (1 - self.vf) * (E[0, 0, 0, 0] + (1 + D1) * E[1, 1, 0, 0])
+        B4 = (
+            self.vf * D1
+            + D2
+            + (1 - self.vf) * (E[0, 0, 1, 1] + D1 * E[1, 1, 1, 1] + E[1, 1, 2, 2])
+        )
+        B5 = (
+            self.vf
+            + D3
+            + (1 - self.vf) * (E[0, 0, 1, 1] + E[1, 1, 1, 1] + D1 * E[1, 1, 2, 2])
+        )
+        A1 = D1 * (B4 + B5) - 2 * B2
+        A2 = (1 + D1) * B2 - (B4 + B5)
+        A3 = B1 - D1 * B3
+        A4 = (1 + D1) * B1 - 2 * B3
+        A5 = (1 - D1) / (B4 - B5)
+        A = 2 * B2 * B3 - B1 * (B4 + B5)
+
+        E11 = self.E0 / (1 + self.vf * (A1 + 2 * self.nu0 * A2) / A)
+        E22 = self.E0 / (
+            1
+            + self.vf
+            * (-2 * self.nu0 * A3 + (1 - self.nu0) * A4 + (1 + self.nu0) * A5 * A)
+            / (2 * A)
+        )
+        mu12 = mu0 * (
+            1 + self.vf / (mu0 / (mu1 - mu0) + 2 * (1 - self.vf) * E[0, 1, 0, 1])
+        )
+        mu23 = mu0 * (
+            1 + self.vf / (mu0 / (mu1 - mu0) + 2 * (1 - self.vf) * E[1, 2, 1, 2])
+        )
+        nu12 = (self.nu0 * A - self.vf * (A3 - self.nu0 * A4)) / (
+            A + self.vf * (A1 + 2 * self.nu0 * A2)
+        )
+        nu23 = E22 / (2 * mu23) - 1
+
+        S = np.zeros((6, 6))
+        S[0, 0] = 1 / E11
+        S[0, 1] = -nu12 / E11
+        S[0, 2] = -nu12 / E11
+        S[1, 1] = 1 / E22
+        S[1, 2] = -nu23 / E22
+        S[2, 2] = 1 / E22
+        S[3, 3] = S[5, 5] = 1 / (2 * mu12)
+        S[4, 4] = 1 / (2 * mu23)
+
+        # Symmetrize the tensor
+        for i in range(6):
+            for j in range(i):
+                S[i, j] = S[j, i]
+
+        UD = np.linalg.inv(S)
+        return UD
+
+    def ABar(self, a):
+        """
+        Homogenized elasticity tensor in the principal frame
+
+        Reference:
+            S.G. Advani and C.L. Tucker, The Use of Tensors to Describe and Predict Fiber Orientation in Short Fiber Composites, J. Rheol., 31, 751-784 (1987).
+
+        Inputs:
+            a, (3, ): principal values of the 2nd fiber orientation tensor, a[0] >= a[1] >= a[2]
+
+        Returns:
+            ABar, (6, 6): effective elasticity tensor using Voigt's notation
+        """
+
+        # Perform UD computations
+        if self.UD is None:
+            self.UD = self.TandonWeng()
+
+        # Constants from UD
+        B1 = self.UD[0, 0] + self.UD[1, 1] - 2 * self.UD[0, 1] - 2 * self.UD[3, 3]
+        B2 = self.UD[0, 1] - self.UD[1, 2]
+        B3 = (self.UD[3, 3] + self.UD[1, 2] - self.UD[1, 1]) / 2
+        B4 = self.UD[1, 2]
+        B5 = (self.UD[1, 1] - self.UD[1, 2]) / 2
+        eye = np.eye(3)
+
+        # 4th-order orientation tensor
+        A4 = A4_orthotropic(a)
+
+        # Orientation averaging using the orientation tensor
+        a = np.diag(a)
+        A = (
+            B1 * A4
+            + B2 * Mat4(np.einsum("ij,kl", a, eye) + np.einsum("kl,ij", a, eye))
+            + B3
+            * Mat4(
+                np.einsum("ik,jl", a, eye)
+                + np.einsum("il,jk", a, eye)
+                + np.einsum("jl,ik", a, eye)
+                + np.einsum("jk,il", a, eye)
+            )
+            + B4 * Mat4(np.einsum("ij,kl", eye, eye))
+            + B5 * Mat4(np.einsum("ik,jl", eye, eye) + np.einsum("il,jk", eye, eye))
+        )
+        A[3:, 3:] /= 2  # converting to the Voigt notation (2*eps12)
+        return A
+
+    def alphaBar(self, ABar):
+        """
+        Homogenized thermal expansion coefficients in the principal frame
+
+        Reference:
+            B.W. Rosen and Z. Hashin, Effective Thermal Expansion Coefficients and Specific Heat of Composite Materials, Int. J. Eng. Sci., 8, 157-173 (1970).
+
+        Inputs:
+            ABar, (6, 6): effective elasticity tensor using Voigt's notation
+
+        Returns:
+            alphaBar, (3, 3)
+        """
+        alpha0, alpha1 = self.get(["alpha0", "alpha1"])
+
+        K0 = bulk_modulus(self.E0, self.nu0)
+        K1 = bulk_modulus(self.E1, self.nu1)
+        invKBar = self.vBar(1 / K0, 1 / K1)
+        alphaBar = self.vBar(alpha0, alpha1)
+
+        SBar = np.diag(np.sum(np.linalg.inv(ABar)[:3, :3], axis=0))
+        alphaBar = alphaBar * np.eye(3) + (
+            (alpha0 - alpha1) / (1 / K0 - 1 / K1) * (3 * SBar - invKBar * np.eye(3))
+        )
+        return alphaBar
+
+
+def lmbda_mu(E, nu):
+    """
+    Convert (E, nu) to (lmbda, mu)
+    """
+    lmbda = nu * E / ((1 + nu) * (1 - 2 * nu))
+    mu = E / (2 * (1 + nu))
+    return lmbda, mu
+
+
+def bulk_modulus(E, nu):
+    """
+    Bulk modulus from (E, nu)
+    """
+    return E / (3 * (1 - 2 * nu))
+
+
+def AIsotropic(E, nu):
+    """
+    Isotropic elasticity tensor using the (phi, phi) bases
+    """
+    lmbda, mu = lmbda_mu(E, nu)
+    A = np.array(
+        (
+            [
+                [lmbda + 2 * mu, lmbda, lmbda, 0, 0, 0],
+                [lmbda, lmbda + 2 * mu, lmbda, 0, 0, 0],
+                [lmbda, lmbda, lmbda + 2 * mu, 0, 0, 0],
+                [0, 0, 0, 2 * mu, 0, 0],
+                [0, 0, 0, 0, 2 * mu, 0],
+                [0, 0, 0, 0, 0, 2 * mu],
+            ]
+        )
+    )
+    return A
+
+
+def A2Eij(A):
+    """
+    Calculate the orthotropic moduli from an elasticity tensor
+    written with the traditional Voigt notation
+
+    Returns:
+        E1, E2, E3, mu12, mu23, mu13, nu12, nu23, nu31
+    """
+    assert A.shape == (6, 6), "Elasticity tensor A is not 6 by 6"
+    S = np.linalg.inv(A)
+    E1 = 1 / S[0, 0]
+    E2 = 1 / S[1, 1]
+    E3 = 1 / S[2, 2]
+    mu12 = 1 / S[3, 3]
+    mu23 = 1 / S[4, 4]
+    mu13 = 1 / S[5, 5]
+    nu12 = -S[1, 0] * E1
+    nu23 = -S[2, 1] * E2
+    nu31 = -S[0, 2] * E3
+    return E1, E2, E3, mu12, mu23, mu13, nu12, nu23, nu31
