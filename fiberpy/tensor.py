@@ -2,9 +2,12 @@ import numpy as np
 
 
 def Mat4(A):
-    """
+    r"""
     Matrix representation of a 4th order tensor
-    with minor symmety using the (phi, phi) bases
+    with minor symmety using the :math:`(\phi,\phi)` bases
+
+    Args:
+        A (array_like of shape (3, 3, 3, 3)): 4th-order tensor
     """
     assert A.ndim == 4, "Only support 4th order tensor"
     M = np.array(
@@ -63,13 +66,22 @@ def Mat4(A):
 
 
 def Mat2(sig):
-    """
+    r"""
     Bijection between a symmetric 2nd order tensor space
-    and 6-dim vector space using the phi basis
+    and 6-dim vector space using the :math:`\phi` basis
 
-    s11 s12 s13
-    s12 s22 s23  <->  s11 s22 s33 s12 s23 s13
-    s13 s23 s33
+    .. math::
+
+        \begin{bmatrix}
+        s_{11} & s_{12} & s_{13} \\
+        s_{12} & s_{22} & s_{23} \\
+        s_{13} & s_{23} & s_{33} \\
+        \end{bmatrix}\iff\begin{bmatrix}
+        s_{11} \\ s_{22} \\ s_{33} \\ s_{12} \\ s_{23} \\ s_{13}
+        \end{bmatrix}
+
+    Args:
+        sig (array_like of dim 1 or 2): 2nd-order tensor
     """
     if sig.ndim == 1:  # vector to matrix
         return np.array(
@@ -84,17 +96,26 @@ def Mat2(sig):
             [sig[0, 0], sig[1, 1], sig[2, 2], sig[0, 1], sig[1, 2], sig[0, 2]]
         )
     else:
-        raise Exception("Only support vector or 2th order tensor")
+        raise NotImplementedError("Only support vector or 2th order tensor")
 
 
 def Mat22(eps):
-    """
+    r"""
     Bijection between a symmetric 2nd order tensor space
-    and 6-dim vector space using the phi2 basis
+    and 6-dim vector space using the :math:`\phi_2` basis
 
-    e11 e12 e13
-    e12 e22 e23  <->  e11 e22 e33 2*e12 2*e23 2*e13
-    e13 e23 e33
+    .. math::
+
+        \begin{bmatrix}
+        e_{11} & e_{12} & e_{13} \\
+        e_{12} & e_{22} & e_{23} \\
+        e_{13} & e_{23} & e_{33} \\
+        \end{bmatrix}\iff\begin{bmatrix}
+        e_{11} \\ e_{22} \\ e_{33} \\ 2e_{12} \\ 2e_{23} \\ 2e_{13}
+        \end{bmatrix}
+
+    Args:
+        eps (array_like of dim 1 or 2): 2nd-order tensor
     """
     if eps.ndim == 1:  # vector to matrix
         return np.array(
@@ -120,13 +141,22 @@ def Mat22(eps):
 
 
 def Mat2S(eps):
-    """
+    r"""
     Bijection between a symmetric 2nd order tensor space
-    and 6-dim vector space using the phiS basis
+    and 6-dim vector space using the :math:`\phi_\mathrm{S}` basis
 
-    e11 e12 e13
-    e12 e22 e23  <->  e11 e22 e33 √2*e12 √2*e23 √2*e13
-    e13 e23 e33
+    .. math::
+
+        \begin{bmatrix}
+        e_{11} & e_{12} & e_{13} \\
+        e_{12} & e_{22} & e_{23} \\
+        e_{13} & e_{23} & e_{33} \\
+        \end{bmatrix}\iff\begin{bmatrix}
+        e_{11} \\ e_{22} \\ e_{33} \\ \sqrt{2}e_{12} \\ \sqrt{2}e_{23} \\ \sqrt{2}e_{13}
+        \end{bmatrix}
+
+    Args:
+        eps (array_like of dim 1 or 2): 2nd-order tensor
     """
     sq2 = np.sqrt(2)
     if eps.ndim == 1:  # vector to matrix
@@ -184,9 +214,12 @@ def ijkl2MN(ijkl):
 
 
 def MatPG(v):
-    """
-    Matrix that converts a 2nd-order strain tensor (Voigt notation)
-    from the principal frame to the global frame
+    r"""
+    Matrix that converts a 2nd-order tensor
+    from the principal frame (:math:`\phi` basis) to the global frame (:math:`\phi` basis)
+
+    Args:
+        v (array_like of shape (3, 3)): principal directions along its columns
     """
 
     return np.array(
@@ -244,9 +277,12 @@ def MatPG(v):
 
 
 def MatGP(v):
-    """
-    Matrix that converts a 2nd-order strain tensor (Voigt notation)
-    from the global frame to the principal frame
+    r"""
+    Matrix that converts a 2nd-order tensor
+    from the global frame (:math:`\phi` basis) to the principal frame (:math:`\phi` basis)
+
+    Args:
+        v (array_like of shape (3, 3)): principal directions along its columns
     """
 
     return np.array(
@@ -304,9 +340,12 @@ def MatGP(v):
 
 
 def MatGP2(v):
-    """
+    r"""
     Matrix that converts a 2nd-order tensor
-    from the global frame (phi2) to the principal frame (phi)
+    from the global frame (:math:`\phi_2` basis) to the principal frame (:math:`\phi` basis)
+
+    Args:
+        v (array_like of shape (3, 3)): principal directions along its columns
     """
 
     return np.array(

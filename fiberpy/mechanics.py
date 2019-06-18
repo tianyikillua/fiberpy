@@ -8,8 +8,8 @@ class FiberComposite:
     Class for computing homogenized properties of a fiber-reinforced
     composite
 
-    Inputs:
-        rve_data, dict: dictionary defining the microstructure
+    Args:
+        rve_data (dict): dictionary defining the microstructure
     """
 
     def __init__(self, rve_data):
@@ -55,7 +55,10 @@ class FiberComposite:
 
     def Eshelby(self):
         """
-        Eshelby's tensor from [Tandon and Weng, 1984]
+        Eshelby's tensor
+
+        Reference:
+            Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
         """
         asq = self.ar ** 2
         asm1 = asq - 1
@@ -98,9 +101,12 @@ class FiberComposite:
         return E
 
     def MoriTanaka(self):
-        """
+        r"""
         Elasticity tensor for a unidirectional RVE using the
-        original M-T formulation
+        original Mori-Tanaka formulation
+
+        Returns:
+            UD (array of shape (6, 6)): elasticity tensor using the :math:`(\phi,\phi)` bases
         """
         def H(E, C0, C1):
             """
@@ -119,9 +125,15 @@ class FiberComposite:
         return UD
 
     def TandonWeng(self):
-        """
+        r"""
         Elasticity tensor for a unidirectional RVE using
         Tandon-Weng's equations
+
+        Returns:
+            UD (array of shape (6, 6)): elasticity tensor using the :math:`(\phi,\phi)` bases
+
+        Reference:
+            Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
         """
         lmbda0, mu0 = lmbda_mu(self.E0, self.nu0)
         lmbda1, mu1 = lmbda_mu(self.E1, self.nu1)
@@ -193,17 +205,17 @@ class FiberComposite:
         return UD
 
     def ABar(self, a):
-        """
+        r"""
         Homogenized elasticity tensor in the principal frame
 
         Reference:
-            S.G. Advani and C.L. Tucker, The Use of Tensors to Describe and Predict Fiber Orientation in Short Fiber Composites, J. Rheol., 31, 751-784 (1987).
+            Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
 
-        Inputs:
-            a, (3, ): principal values of the 2nd fiber orientation tensor, a[0] >= a[1] >= a[2]
+        Args:
+            a (array_like of shape (3,)): principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
 
         Returns:
-            ABar, (6, 6): effective elasticity tensor using Voigt's notation
+            ABar (array of shape (6, 6)): effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
         """
 
         # Perform UD computations
@@ -243,14 +255,14 @@ class FiberComposite:
         """
         Homogenized thermal expansion coefficients in the principal frame
 
-        Reference:
-            B.W. Rosen and Z. Hashin, Effective Thermal Expansion Coefficients and Specific Heat of Composite Materials, Int. J. Eng. Sci., 8, 157-173 (1970).
-
-        Inputs:
-            ABar, (6, 6): effective elasticity tensor using Voigt's notation
+        Args:
+            ABar (array_like of shape (6, 6)): elasticity tensor
 
         Returns:
-            alphaBar, (3, 3)
+            alphaBar (array of shape (3, 3)): effective thermal dilatation coefficient matrix
+
+        Reference:
+            Rosen, B. W. & Hashin, Z. Effective thermal expansion coefficients and specific heats of composite materials. International Journal of Engineering Science, Elsevier BV, 1970, 8, 157-173
         """
         alpha0, alpha1 = self.get(["alpha0", "alpha1"])
 
@@ -267,8 +279,8 @@ class FiberComposite:
 
 
 def lmbda_mu(E, nu):
-    """
-    Convert (E, nu) to (lmbda, mu)
+    r"""
+    Convert :math:`(E, nu)` to :math:`(\lambda,\mu)`
     """
     lmbda = nu * E / ((1 + nu) * (1 - 2 * nu))
     mu = E / (2 * (1 + nu))
@@ -277,14 +289,21 @@ def lmbda_mu(E, nu):
 
 def bulk_modulus(E, nu):
     """
-    Bulk modulus from (E, nu)
+    Bulk modulus from :math:`(E, nu)`
     """
     return E / (3 * (1 - 2 * nu))
 
 
 def AIsotropic(E, nu):
-    """
-    Isotropic elasticity tensor using the (phi, phi) bases
+    r"""
+    Isotropic elasticity tensor given in the :math:`(\phi,\phi)` bases
+
+    Args:
+        E (float): Young's modulus
+        nu (float): Poisson coefficient
+
+    Returns:
+        A (array of shape (6, 6)): elasticity tensor
     """
     lmbda, mu = lmbda_mu(E, nu)
     A = np.array(
@@ -303,12 +322,15 @@ def AIsotropic(E, nu):
 
 
 def A2Eij(A):
-    """
+    r"""
     Calculate the orthotropic moduli from an elasticity tensor
-    written with the traditional Voigt notation
+    written using the :math:`(\phi_2,\phi)` bases
+
+    Args:
+        A (array_like of shape (6, 6)): elasticity tensor
 
     Returns:
-        E1, E2, E3, mu12, mu23, mu13, nu12, nu23, nu31
+        :math:`(E_1,E_2,E_3,\mu_{12},\mu_{23},\mu_{13},\nu_{12}, \nu_{23}, \nu_{31})`
     """
     assert A.shape == (6, 6), "Elasticity tensor A is not 6 by 6"
     S = np.linalg.inv(A)
