@@ -13,7 +13,7 @@ def A4_linear(a):
         a (array_like of shape (3, 3)): fiber orientation tensor
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
     eye = np.eye(3)
     A_lin = -1 / 35 * (
@@ -39,7 +39,7 @@ def A4_quadratic(a):
         a (array_like of shape (3, 3)): fiber orientation tensor
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
     return Mat4(np.einsum("ij,kl", a, a))
 
@@ -52,7 +52,7 @@ def A4_hybrid(a):
         a (array_like of shape (3, 3)): fiber orientation tensor
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
     f = 1 - 27 * np.linalg.det(a)
     return (1 - f) * A4_linear(a) + f * A4_quadratic(a)
@@ -66,7 +66,7 @@ def A4_invariants(a):
         a (array_like of shape (3, 3)): fiber orientation tensor
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
 
     def symmetrize(a):
@@ -241,9 +241,9 @@ def A4_orthotropic(a):
         a (array_like of shape (3,)): fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor using the :math:`(\phi,\phi)` bases
 
-    Reference:
+    References:
         VerWeyst, B. E. Numerical predictions of flow-induced fiber orientation in three-dimensional geometries. University of Illinois at Urbana-Champaign, 1998
     """
 
@@ -347,7 +347,7 @@ def A4_exact(a):
         a (array_like of shape (3,)): fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
 
     Returns:
-        A4 (array of shape (6, 6)): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+        array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
     from scipy import optimize
     import mpmath as mp

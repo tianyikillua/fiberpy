@@ -58,7 +58,7 @@ class FiberComposite:
         """
         Eshelby's tensor
 
-        Reference:
+        References:
             Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
         """
         asq = self.ar ** 2
@@ -107,7 +107,7 @@ class FiberComposite:
         original Mori-Tanaka formulation
 
         Returns:
-            UD (array of shape (6, 6)): elasticity tensor using the :math:`(\phi,\phi)` bases
+            array of shape (6, 6): Elasticity tensor using the :math:`(\phi,\phi)` bases
         """
         def H(E, C0, C1):
             """
@@ -131,9 +131,9 @@ class FiberComposite:
         Tandon-Weng's equations
 
         Returns:
-            UD (array of shape (6, 6)): elasticity tensor using the :math:`(\phi,\phi)` bases
+            array of shape (6, 6): Elasticity tensor using the :math:`(\phi,\phi)` bases
 
-        Reference:
+        References:
             Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
         """
         lmbda0, mu0 = lmbda_mu(self.E0, self.nu0)
@@ -209,14 +209,14 @@ class FiberComposite:
         r"""
         Homogenized elasticity tensor in the principal frame
 
-        Reference:
-            Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
-
         Args:
             a (array_like of shape (3,)): principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
 
         Returns:
-            ABar (array of shape (6, 6)): effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
+            array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
+
+        References:
+            Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
         """
 
         # Perform UD computations
@@ -260,9 +260,9 @@ class FiberComposite:
             ABar (array_like of shape (6, 6)): elasticity tensor
 
         Returns:
-            alphaBar (array of shape (3, 3)): effective thermal dilatation coefficient matrix
+            array of shape (3, 3): Effective thermal dilatation coefficient matrix
 
-        Reference:
+        References:
             Rosen, B. W. & Hashin, Z. Effective thermal expansion coefficients and specific heats of composite materials. International Journal of Engineering Science, Elsevier BV, 1970, 8, 157-173
         """
         alpha0, alpha1 = self.get(["alpha0", "alpha1"])
@@ -304,7 +304,7 @@ def AIsotropic(E, nu):
         nu (float): Poisson coefficient
 
     Returns:
-        A (array of shape (6, 6)): elasticity tensor
+        array of shape (6, 6): Elasticity tensor
     """
     lmbda, mu = lmbda_mu(E, nu)
     A = np.array(
