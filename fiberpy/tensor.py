@@ -219,7 +219,7 @@ def MatPG(v):
     from the principal frame (:math:`\phi` basis) to the global frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): principal directions along its columns
+        v (array_like of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(
@@ -282,7 +282,7 @@ def MatGP(v):
     from the global frame (:math:`\phi` basis) to the principal frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): principal directions along its columns
+        v (array_like of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(
@@ -345,7 +345,7 @@ def MatGP2(v):
     from the global frame (:math:`\phi_2` basis) to the principal frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): principal directions along its columns
+        v (array_like of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(

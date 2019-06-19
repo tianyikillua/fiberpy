@@ -10,7 +10,7 @@ def A4_linear(a):
     Compute the linear closure
 
     Args:
-        a (array_like of shape (3, 3)): fiber orientation tensor
+        a (array_like of shape (3, 3)): Fiber orientation tensor
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
@@ -36,7 +36,7 @@ def A4_quadratic(a):
     Compute the quadratic closure
 
     Args:
-        a (array_like of shape (3, 3)): fiber orientation tensor
+        a (array_like of shape (3, 3)): Fiber orientation tensor
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
@@ -49,7 +49,7 @@ def A4_hybrid(a):
     Compute the hybrid closure
 
     Args:
-        a (array_like of shape (3, 3)): fiber orientation tensor
+        a (array_like of shape (3, 3)): Fiber orientation tensor
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
@@ -63,7 +63,7 @@ def A4_invariants(a):
     Compute the IBOF closure
 
     Args:
-        a (array_like of shape (3, 3)): fiber orientation tensor
+        a (array_like of shape (3, 3)): Fiber orientation tensor
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
@@ -238,7 +238,7 @@ def A4_orthotropic(a):
     Compute the orthotropic closure in the principal frame
 
     Args:
-        a (array_like of shape (3,)): fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
+        a (array_like of shape (3,)): Fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor using the :math:`(\phi,\phi)` bases
@@ -344,7 +344,7 @@ def A4_exact(a):
     Compute the exact closure in the principal frame
 
     Args:
-        a (array_like of shape (3,)): fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
+        a (array_like of shape (3,)): Fiber orientation principal values, ``a[0] >= a[1] >= a[2]``
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases

@@ -10,7 +10,7 @@ class FiberComposite:
     composite
 
     Args:
-        rve_data (dict): dictionary defining the microstructure
+        rve_data (dict): Dictionary defining the microstructure
     """
 
     def __init__(self, rve_data):
@@ -210,7 +210,7 @@ class FiberComposite:
         Homogenized elasticity tensor in the principal frame
 
         Args:
-            a (array_like of shape (3,)): principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
+            a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
 
         Returns:
             array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
@@ -257,7 +257,7 @@ class FiberComposite:
         Homogenized thermal expansion coefficients in the principal frame
 
         Args:
-            ABar (array_like of shape (6, 6)): elasticity tensor
+            ABar (array_like of shape (6, 6)): Elasticity tensor
 
         Returns:
             array of shape (3, 3): Effective thermal dilatation coefficient matrix
@@ -328,7 +328,7 @@ def A2Eij(A):
     written using the :math:`(\phi_2,\phi)` bases
 
     Args:
-        A (array_like of shape (6, 6)): elasticity tensor
+        A (array_like of shape (6, 6)): Elasticity tensor
 
     Returns:
         :math:`(E_1,E_2,E_3,\mu_{12},\mu_{23},\mu_{13},\nu_{12}, \nu_{23}, \nu_{31})`
