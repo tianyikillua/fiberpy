@@ -10,6 +10,7 @@ install:
   - pip3 install .
 
 script:
+  - cd test
   - pytest --cov fiberpy
 
 after_success:
