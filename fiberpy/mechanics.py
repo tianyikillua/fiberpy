@@ -1,6 +1,6 @@
 import numpy as np
 
-from .closure import A4_orthotropic
+from .closure import A4_linear, A4_quadratic, A4_hybrid, A4_orthotropic, A4_invariants, A4_exact
 from .tensor import Mat4
 
 
@@ -205,12 +205,15 @@ class FiberComposite:
         UD = np.linalg.inv(S)
         return UD
 
-    def ABar(self, a):
+    def ABar(self, a, model="TandonWeng", closure="orthotropic", recompute_UD=False):
         r"""
         Homogenized elasticity tensor in the principal frame
 
         Args:
             a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
+            model (str): Micromechanical model for the unidirectional RVE (``TandonWeng`` or ``MoriTanaka``)
+            closure (str): 4th-order fiber orientation closure model ``A4_*``, see :module:`fiberpy.closure`
+            recompute_UD (bool): Whether force recomputing elastic properties of the unidirectional RVE
 
         Returns:
             array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
@@ -220,8 +223,11 @@ class FiberComposite:
         """
 
         # Perform UD computations
-        if self.UD is None:
-            self.UD = self.TandonWeng()
+        if self.UD is None or recompute_UD:
+            if model == "TandonWeng":
+                self.UD = self.TandonWeng()
+            elif model == "MoriTanaka":
+                self.UD = self.MoriTanaka()
 
         # Constants from UD
         B1 = self.UD[0, 0] + self.UD[1, 1] - 2 * self.UD[0, 1] - 2 * self.UD[3, 3]
@@ -232,7 +238,19 @@ class FiberComposite:
         eye = np.eye(3)
 
         # 4th-order orientation tensor
-        A4 = A4_orthotropic(a)
+        assert a.shape == (3,)
+        if closure == "linear":
+            A4 = A4_linear(a)
+        elif closure == "quadratic":
+            A4 = A4_quadratic(a)
+        elif closure == "hybrid":
+            A4 = A4_hybrid(a)
+        elif closure == "orthotropic":
+            A4 = A4_orthotropic(a)
+        elif closure == "invariants":
+            A4 = A4_invariants(a)
+        elif closure == "exact":
+            A4 = A4_exact(a)
 
         # Orientation averaging using the orientation tensor
         a = np.diag(a)
