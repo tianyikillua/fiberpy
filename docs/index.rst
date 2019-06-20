@@ -1,5 +1,5 @@
-Welcome to fiberpy's documentation!
-===================================
+Computational methods for fiber-reinforced composites
+=====================================================
 
 .. toctree::
    :maxdepth: 2
