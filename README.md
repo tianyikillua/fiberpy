@@ -1,9 +1,15 @@
 # Computational methods for fiber-reinforced composites
 
+[![travis](https://img.shields.io/travis/tianyikillua/fiberpy.svg?style=flat-square)](https://travis-ci.org/tianyikillua/fiberpy)
+[![codecov](https://img.shields.io/codecov/c/github/tianyikillua/fiberpy.svg?style=flat-square)](https://codecov.io/gh/tianyikillua/fiberpy)
+[![PyPi Version](https://img.shields.io/pypi/v/fiberpy.svg?style=flat-square)](https://pypi.org/project/fiberpy)
+
 This package provides several computational models for fiber-reinforced composites (thermoplastics reiforced by glass fibers, for instance).
 
-- Compute the 4th-order fiber orientation tensor from the 2nd-order one (using closure models)
-- Compute the effective thermomechanical properties from the microstructure definition
+- Compute the 4th-order fiber orientation tensor from the 2nd-order one (linear, quadratic, hybrid, orthotropic closure models...)
+- Compute the effective thermomechanical properties from the microstructure definition (Mori-Tanaka, orientation averaging...)
+
+Documentation is available [here](https://fiberpy.readthedocs.io).
 
 ### Testing
 
