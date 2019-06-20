@@ -212,7 +212,7 @@ class FiberComposite:
         Args:
             a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
             model (str): Micromechanical model for the unidirectional RVE (``TandonWeng`` or ``MoriTanaka``)
-            closure (str): 4th-order fiber orientation closure model ``A4_*``, see :module:`fiberpy.closure`
+            closure (str): 4th-order fiber orientation closure model ``A4_*``, see `fiberpy.closure`
             recompute_UD (bool): Whether force recomputing elastic properties of the unidirectional RVE
 
         Returns:
