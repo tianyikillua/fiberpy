@@ -1,0 +1,16 @@
+language: python
+
+python:
+  - "3.6"
+
+before_install:
+  - pip3 install -U pytest pytest-cov codecov
+
+install:
+  - pip3 install .
+
+script:
+  - pytest --cov fiberpy
+
+after_success:
+  - codecov
