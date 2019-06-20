@@ -1,22 +1,23 @@
 import numpy as np
-from fiberpy.closure import A4_quadratic, A4_hybrid, A4_orthotropic
+import pytest
+from fiberpy.closure import A4_linear, A4_quadratic, A4_hybrid, A4_orthotropic, A4_invariants, A4_exact
 
-# Define a random 2nd order orientation tensor
-a = np.random.rand(3, 3)
-a = a + a.T
-_, v = np.linalg.eigh(a)
-e = np.array([0.7, 0.2, 0.1])
-a = v @ np.diag(e) @ v.T
-assert np.isclose(np.trace(a), 1)
+# Define test 2nd order orientation tensors
+a_random = 1 / 3 * np.ones(3)
+a_UD = np.array([1, 0, 0])
 
 
-def test_quadratic():
-    return A4_quadratic(a)
+@pytest.mark.parametrize(
+    "closure", [A4_hybrid, A4_orthotropic, A4_invariants, A4_exact])
+def test_random(closure):
+    # The linear closure is exact for the random orientation state
+    A4 = A4_linear(a_random)
+    assert np.allclose(A4, closure(a_random))
 
 
-def test_hybrid():
-    return A4_hybrid(a)
-
-
-def test_orthotropic():
-    return A4_orthotropic(e)
+@pytest.mark.parametrize(
+    "closure", [A4_hybrid, A4_orthotropic, A4_invariants, A4_exact])
+def test_UD(closure):
+    # The quadratic closure is exact for the UD orientation state
+    A4 = A4_quadratic(a_UD)
+    assert np.allclose(A4, closure(a_UD), atol=1e-3)

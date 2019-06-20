@@ -10,11 +10,16 @@ def A4_linear(a):
     Compute the linear closure
 
     Args:
-        a (array_like of shape (3, 3)): Fiber orientation tensor
+        a (array_like of shape (3, 3) or (3,)): Fiber orientation tensor (or its principal values in decreasing order)
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+
+    References:
+        Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
     """
+    if a.ndim == 1:
+        a = np.diag(a)
     eye = np.eye(3)
     A_lin = -1 / 35 * (
         np.einsum("ij,kl", eye, eye)
@@ -36,11 +41,16 @@ def A4_quadratic(a):
     Compute the quadratic closure
 
     Args:
-        a (array_like of shape (3, 3)): Fiber orientation tensor
+        a (array_like of shape (3, 3) or (3,)): Fiber orientation tensor (or its principal values in decreasing order)
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+
+    References:
+        Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
     """
+    if a.ndim == 1:
+        a = np.diag(a)
     return Mat4(np.einsum("ij,kl", a, a))
 
 
@@ -49,11 +59,16 @@ def A4_hybrid(a):
     Compute the hybrid closure
 
     Args:
-        a (array_like of shape (3, 3)): Fiber orientation tensor
+        a (array_like of shape (3, 3) or (3,)): Fiber orientation tensor (or its principal values in decreasing order)
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
+
+    References:
+        Advani, S. G. & Tucker III, C. L. Closure approximations for three-dimensional structure tensors. Journal of Rheology, SOR, 1990, 34, 367-386
     """
+    if a.ndim == 1:
+        a = np.diag(a)
     f = 1 - 27 * np.linalg.det(a)
     return (1 - f) * A4_linear(a) + f * A4_quadratic(a)
 
@@ -63,11 +78,13 @@ def A4_invariants(a):
     Compute the IBOF closure
 
     Args:
-        a (array_like of shape (3, 3)): Fiber orientation tensor
+        a (array_like of shape (3, 3) or (3,)): Fiber orientation tensor (or its principal values in decreasing order)
 
     Returns:
         array of shape (6, 6): 4th-order orientation tensor written using the :math:`(\phi,\phi)` bases
     """
+    if a.ndim == 1:
+        a = np.diag(a)
 
     def symmetrize(a):
         S = np.zeros_like(a)
@@ -230,7 +247,7 @@ def A4_invariants(a):
         + beta[4] * symmetrize(np.tensordot(a, a.dot(a), 0))
         + beta[5] * symmetrize(np.tensordot(a.dot(a), a.dot(a), 0))
     )
-    return A
+    return Mat4(A)
 
 
 def A4_orthotropic(a):
