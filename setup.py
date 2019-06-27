@@ -33,7 +33,6 @@ setup(
         about["__status__"],
         # See <https://pypi.org/classifiers/> for all classifiers.
         "Operating System :: OS Independent",
-        "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",

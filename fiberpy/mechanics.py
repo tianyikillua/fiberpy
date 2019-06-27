@@ -107,7 +107,7 @@ class FiberComposite:
         original Mori-Tanaka formulation
 
         Returns:
-            array of shape (6, 6): Elasticity tensor using the :math:`(\phi,\phi)` bases
+            array of shape (6, 6): Elasticity tensor using the :math:`(\phi, \phi)` bases
         """
         def H(E, C0, C1):
             """
@@ -131,7 +131,7 @@ class FiberComposite:
         Tandon-Weng's equations
 
         Returns:
-            array of shape (6, 6): Elasticity tensor using the :math:`(\phi,\phi)` bases
+            array of shape (6, 6): Elasticity tensor using the :math:`(\phi, \phi)` bases
 
         References:
             Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
@@ -212,11 +212,11 @@ class FiberComposite:
         Args:
             a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
             model (str): Micromechanical model for the unidirectional RVE (``TandonWeng`` or ``MoriTanaka``)
-            closure (str): 4th-order fiber orientation closure model ``A4_*``, see `fiberpy.closure`
+            closure (str): 4th-order fiber orientation closure model ``A4_*``, see :py:mod:`fiberpy.closure`
             recompute_UD (bool): Whether force recomputing elastic properties of the unidirectional RVE
 
         Returns:
-            array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2,\phi)` bases
+            array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2, \phi)` bases
 
         References:
             Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
@@ -299,7 +299,7 @@ class FiberComposite:
 
 def lmbda_mu(E, nu):
     r"""
-    Convert :math:`(E, \nu)` to :math:`(\lambda,\mu)`
+    Convert :math:`(E, \nu)` to :math:`(\lambda, \mu)`
     """
     lmbda = nu * E / ((1 + nu) * (1 - 2 * nu))
     mu = E / (2 * (1 + nu))
@@ -315,7 +315,7 @@ def bulk_modulus(E, nu):
 
 def AIsotropic(E, nu):
     r"""
-    Isotropic elasticity tensor given in the :math:`(\phi,\phi)` bases
+    Isotropic elasticity tensor given in the :math:`(\phi, \phi)` bases
 
     Args:
         E (float): Young's modulus
@@ -343,13 +343,13 @@ def AIsotropic(E, nu):
 def A2Eij(A):
     r"""
     Calculate the orthotropic moduli from an elasticity tensor
-    written using the :math:`(\phi_2,\phi)` bases
+    written using the :math:`(\phi_2, \phi)` bases
 
     Args:
         A (array_like of shape (6, 6)): Elasticity tensor
 
     Returns:
-        :math:`(E_1,E_2,E_3,\mu_{12},\mu_{23},\mu_{13},\nu_{12}, \nu_{23}, \nu_{31})`
+        :math:`(E_1, E_2, E_3, \mu_{12}, \mu_{23}, \mu_{13}, \nu_{12}, \nu_{23}, \nu_{31})`
     """
     assert A.shape == (6, 6), "Elasticity tensor A is not 6 by 6"
     S = np.linalg.inv(A)
