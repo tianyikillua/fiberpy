@@ -8,7 +8,4 @@ __all__ = [
     "__license__",
     "__version__",
     "__status__",
-    "closure",
-    "mechanics",
-    "tensor"
 ]
