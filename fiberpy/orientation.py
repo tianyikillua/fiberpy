@@ -33,25 +33,34 @@ def apply_Ax(v, A, x):
     return v @ res @ v.T
 
 
-def a_RSC(a0, t, L, ci, kappa, ar, closure="orthotropic", method="Radau"):
+def fiber_orientation(a0, t, L, ci, ar, kappa=1.0, D3=None, closure="orthotropic", method="Radau", debug=False, **kwargs):
     """
-    Compute fiber orientation tensor evolution using the RSC model
+    Compute fiber orientation tensor evolution using the Folgar-Tucker model
+    as its variants
 
     Args:
         a0 (ndarray of shape (3, 3)): Initial fiber orientation tensor
         t (ndarray of shape (1, )): Time instants
         L (ndarray of shape (3, 3)): Velocity gradient
         ci (float): Interaction coefficient
-        kappa (float): Reduction coefficient, ``0 < kappa <= 1``
         ar (float): Aspect ratio
+        kappa (float): Reduction coefficient when using the RSC model, ``0 < kappa <= 1``
+        D3 (ndarray of shape (3, )): Coefficients :math:`(D_1,D_2,D_3)` when using the MRD model
         closure (str): 4th-order fiber orientation closure model ``A4_*``, see :py:mod:`fiberpy.closure`
         method (str): Numerical method to integrate the IVP, see :py:func:`scipy.integrate.solve_ivp`
+        debug (bool): Return instead the ``sol`` object and ``dadt``
     """
     D_ = 0.5 * (L + L.T)
     W_ = 0.5 * (L - L.T)
     lmbda = (ar ** 2 - 1) / (ar ** 2 + 1)
     gamma = np.sqrt(2) * np.linalg.norm(D_)
-    a0_ = a0.reshape(-1)
+    a0_ = a0.flatten()
+
+    # MRD model
+    if D3 is not None:
+        trD3 = np.sum(D3)
+        D3 = np.diag(D3)
+        kappa = 1.0
 
     def dadt(t, a):
         a_ = a.reshape((3, 3))
@@ -59,18 +68,31 @@ def a_RSC(a0, t, L, ci, kappa, ar, closure="orthotropic", method="Radau"):
         e = e[::-1]
         v = v[:, ::-1]
         A = eval("A4_" + closure + "(e)")
-        A[:3, :3] = kappa * A[:3, :3]
-        A[:3, :3] += (1 - kappa) * np.diag(e)
-        dadt_ = (
-            W_.dot(a_)
-            - a_.dot(W_)
-            + lmbda * (D_.dot(a_) + a_.dot(D_) - 2 * apply_Ax(v, A, D_))
-            + 2 * kappa * ci * gamma * (np.eye(3) - 3 * a_)
-        )
-        return dadt_.reshape(-1)
+        if not np.isclose(kappa, 1):
+            A[:3, :3] = kappa * A[:3, :3]
+            A[:3, :3] += (1 - kappa) * np.diag(e)
 
-    sol = integrate.solve_ivp(dadt, (t[0], t[-1]), a0_, t_eval=t, method=method)
-    return sol.y
+        # Folgar-Tucker or RSC
+        if D3 is None:
+            diffusion_part = np.eye(3) - 3 * a_
+        else:
+            # MRD
+            diffusion_part = v @ D3 @ v.T - trD3 * a_
+
+        dadt_ = (
+            W_ @ a_ - a_ @ W_
+            + lmbda * (D_ @ a_ + a_ @ D_ - 2 * apply_Ax(v, A, D_))
+            + 2 * kappa * ci * gamma * diffusion_part
+        )
+        return dadt_.flatten()
+
+    sol = integrate.solve_ivp(
+        dadt, (t[0], t[-1]), a0_, t_eval=t, method=method, **kwargs)
+
+    if not debug:
+        return sol.y
+    else:
+        return sol, dadt
 
 
 def shear_steady_state(ci, ar, closure="orthotropic", a0_isotropic="3d"):
@@ -88,6 +110,5 @@ def shear_steady_state(ci, ar, closure="orthotropic", a0_isotropic="3d"):
         a0 = np.eye(3) / 3
     else:
         a0 = np.diag(np.array([0.5, 0, 0.5]))
-    kappa = 1
-    a = a_RSC(a0, t, Shear, ci, kappa, ar, closure=closure)
+    a = fiber_orientation(a0, t, Shear, ci, ar, closure=closure)
     return a[:, -1]
