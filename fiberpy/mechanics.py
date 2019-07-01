@@ -239,18 +239,7 @@ class FiberComposite:
 
         # 4th-order orientation tensor
         assert a.shape == (3,)
-        if closure == "linear":
-            A4 = A4_linear(a)
-        elif closure == "quadratic":
-            A4 = A4_quadratic(a)
-        elif closure == "hybrid":
-            A4 = A4_hybrid(a)
-        elif closure == "orthotropic":
-            A4 = A4_orthotropic(a)
-        elif closure == "invariants":
-            A4 = A4_invariants(a)
-        elif closure == "exact":
-            A4 = A4_exact(a)
+        A4 = eval("A4_" + closure + "(a)")
 
         # Orientation averaging using the orientation tensor
         a = np.diag(a)

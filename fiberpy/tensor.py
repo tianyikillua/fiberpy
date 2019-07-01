@@ -7,7 +7,7 @@ def Mat4(A):
     with minor symmety using the :math:`(\phi,\phi)` bases
 
     Args:
-        A (array_like of shape (3, 3, 3, 3)): 4th-order tensor
+        A (ndarray of shape (3, 3, 3, 3)): 4th-order tensor
     """
     assert A.ndim == 4, "Only support 4th order tensor"
     M = np.array(
@@ -81,7 +81,7 @@ def Mat2(sig):
         \end{bmatrix}
 
     Args:
-        sig (array_like of dim 1 or 2): 2nd-order tensor
+        sig (ndarray of dim 1 or 2): 2nd-order tensor
     """
     if sig.ndim == 1:  # vector to matrix
         return np.array(
@@ -115,7 +115,7 @@ def Mat22(eps):
         \end{bmatrix}
 
     Args:
-        eps (array_like of dim 1 or 2): 2nd-order tensor
+        eps (ndarray of dim 1 or 2): 2nd-order tensor
     """
     if eps.ndim == 1:  # vector to matrix
         return np.array(
@@ -156,7 +156,7 @@ def Mat2S(eps):
         \end{bmatrix}
 
     Args:
-        eps (array_like of dim 1 or 2): 2nd-order tensor
+        eps (ndarray of dim 1 or 2): 2nd-order tensor
     """
     sq2 = np.sqrt(2)
     if eps.ndim == 1:  # vector to matrix
@@ -219,7 +219,7 @@ def MatPG(v):
     from the principal frame (:math:`\phi` basis) to the global frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): Principal directions along its columns
+        v (ndarray of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(
@@ -282,7 +282,7 @@ def MatGP(v):
     from the global frame (:math:`\phi` basis) to the principal frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): Principal directions along its columns
+        v (ndarray of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(
@@ -345,7 +345,7 @@ def MatGP2(v):
     from the global frame (:math:`\phi_2` basis) to the principal frame (:math:`\phi` basis)
 
     Args:
-        v (array_like of shape (3, 3)): Principal directions along its columns
+        v (ndarray of shape (3, 3)): Principal directions along its columns
     """
 
     return np.array(
