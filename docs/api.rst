@@ -10,6 +10,12 @@ Thermomechanical properties through homogenization
 .. automodule:: fiberpy.mechanics
    :members:
 
+Fiber orientation models
+------------------------
+
+.. automodule:: fiberpy.orientation
+   :members:
+
 Closure models for 4th-order fiber orientation tensor
 -----------------------------------------------------
 
