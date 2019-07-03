@@ -45,6 +45,8 @@ master_doc = "index"
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# Display todos by setting to True
+todo_include_todos = True
 
 # -- Options for HTML output -------------------------------------------------
 
