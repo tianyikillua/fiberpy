@@ -2,7 +2,8 @@
 
 [![travis](https://img.shields.io/travis/tianyikillua/fiberpy.svg?style=flat-square)](https://travis-ci.org/tianyikillua/fiberpy)
 [![codecov](https://img.shields.io/codecov/c/github/tianyikillua/fiberpy.svg?style=flat-square)](https://codecov.io/gh/tianyikillua/fiberpy)
-[![PyPi Version](https://img.shields.io/pypi/v/fiberpy.svg?style=flat-square)](https://pypi.org/project/fiberpy)
+[![readthedocs](https://readthedocs.org/projects/fiberpy/badge/?version=latest&style=flat-square)](https://readthedocs.org/projects/fiberpy/?badge=latest)
+[![pypi](https://img.shields.io/pypi/v/fiberpy.svg?style=flat-square)](https://pypi.org/project/fiberpy)
 
 This package provides several computational models for fiber-reinforced composites (thermoplastics reiforced by glass fibers, for instance).
 
@@ -17,6 +18,13 @@ This package provides several computational models for fiber-reinforced composit
 Some notebook examples can be found in `examples`.
 
 Documentation is available [here](https://fiberpy.readthedocs.io).
+
+### Installation
+
+To install `fiberpy`, you are invited to use `pip` and its associated options
+```
+pip install -U fiberpy
+```
 
 ### Testing
 
