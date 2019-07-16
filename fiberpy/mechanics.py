@@ -1,6 +1,13 @@
 import numpy as np
 
-from .closure import A4_linear, A4_quadratic, A4_hybrid, A4_orthotropic, A4_invariants, A4_exact
+from .closure import (
+    A4_linear,
+    A4_quadratic,
+    A4_hybrid,
+    A4_orthotropic,
+    A4_invariants,
+    A4_exact,
+)
 from .tensor import Mat4
 
 
@@ -109,6 +116,7 @@ class FiberComposite:
         Returns:
             array of shape (6, 6): Elasticity tensor using the :math:`(\phi, \phi)` bases
         """
+
         def H(E, C0, C1):
             """
             Concentration tensor H (= B according to the M-T model)
@@ -122,7 +130,9 @@ class FiberComposite:
         eye = np.eye(6)
         E = Mat4(self.Eshelby())
         B = H(E, C0, C1)
-        UD = (self.vf * C1 @ B + (1 - self.vf) * C0) @ (np.linalg.inv(self.vf * B + (1 - self.vf) * eye))
+        UD = (self.vf * C1 @ B + (1 - self.vf) * C0) @ (
+            np.linalg.inv(self.vf * B + (1 - self.vf) * eye)
+        )
         return UD
 
     def TandonWeng(self):

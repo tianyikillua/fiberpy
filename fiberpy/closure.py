@@ -518,6 +518,7 @@ def a_from_ODF(psi):
         To cleanup
     """
     from scipy import integrate
+
     # Renormalization
     val = 2 * integrate.quad(psi, 0, np.pi)[0]
     psi_ = lambda theta: psi(theta) / val
