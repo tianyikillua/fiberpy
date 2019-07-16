@@ -1,12 +1,12 @@
 import numpy as np
 
 from .closure import (
-    A4_linear,
-    A4_quadratic,
-    A4_hybrid,
-    A4_orthotropic,
-    A4_invariants,
     A4_exact,
+    A4_hybrid,
+    A4_invariants,
+    A4_linear,
+    A4_orthotropic,
+    A4_quadratic,
 )
 from .tensor import Mat4
 

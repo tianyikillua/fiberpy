@@ -1,8 +1,12 @@
 import numpy as np
 import pytest
 
-from fiberpy.orientation import (Icosphere, Shear, distribution_function,
-                                 fiber_orientation)
+from fiberpy.orientation import (
+    Icosphere,
+    Shear,
+    distribution_function,
+    fiber_orientation,
+)
 
 
 def test_FT_RSC_steady():
@@ -23,9 +27,11 @@ def test_FT_RSC_steady():
 
 @pytest.mark.parametrize(
     "fun_name, ref_value",
-    [("constant", 4 * np.pi),
-     ("isotropic_orientation", np.eye(3) / 3),
-     ("normal", np.zeros(3))]
+    [
+        ("constant", 4 * np.pi),
+        ("isotropic_orientation", np.eye(3) / 3),
+        ("normal", np.zeros(3)),
+    ],
 )
 def test_Icosphere(fun_name, ref_value):
     icosphere = Icosphere(n_refinement=3)
@@ -45,4 +51,6 @@ def test_Icosphere(fun_name, ref_value):
 
 def test_distribution_function():
     _, mesh = distribution_function(np.eye(3) / 3, n_refinement=3, return_mesh=True)
-    assert np.isclose(mesh.point_data["ODF (points)"].mean(), 1 / (4 * np.pi), rtol=1e-2)
+    assert np.isclose(
+        mesh.point_data["ODF (points)"].mean(), 1 / (4 * np.pi), rtol=1e-2
+    )

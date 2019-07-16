@@ -1,8 +1,9 @@
 import platform
 import shutil
-import fiberpy
 
 from invoke import task
+
+import fiberpy
 
 VERSION = fiberpy.__version__
 
@@ -36,3 +37,9 @@ def upload(c):
 def docs(c):
     print("Building docs...")
     c.run("sphinx-build docs docs/_build")
+
+
+@task
+def format(c):
+    c.run("isort -rc .")
+    c.run("black .")

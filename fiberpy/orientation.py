@@ -2,12 +2,12 @@ import numpy as np
 from scipy import integrate, optimize
 
 from .closure import (
-    A4_linear,
-    A4_quadratic,
-    A4_hybrid,
-    A4_orthotropic,
-    A4_invariants,
     A4_exact,
+    A4_hybrid,
+    A4_invariants,
+    A4_linear,
+    A4_orthotropic,
+    A4_quadratic,
 )
 from .tensor import Mat2
 
@@ -233,8 +233,11 @@ class Icosphere:
         A2 = -0.081106
         A3 = 0.000893
         A4 = 0.003796
-        x = 2 * np.sqrt(3) * longitude * np.cos(theta_) / (3 * (A1 + 3 * A2 * theta_**2 + theta_**6 * (7 * A3 + 9 * A4 * theta_**2)))
-        y = theta_ * (A1 + A2 * theta_**2 + theta_**6 * (A3 + A4 * theta_**2))
+        denominator = 3 * (
+            A1 + 3 * A2 * theta_ ** 2 + theta_ ** 6 * (7 * A3 + 9 * A4 * theta_ ** 2)
+        )
+        x = 2 * np.sqrt(3) * longitude * np.cos(theta_) / denominator
+        y = theta_ * (A1 + A2 * theta_ ** 2 + theta_ ** 6 * (A3 + A4 * theta_ ** 2))
         return x, y
 
     def centroid(self):
@@ -322,7 +325,7 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
         factor = icosphere.integrate(Bingham_Z)
 
         def moment_2nd(x):
-            return Bingham_Z(x) * x**2 / factor
+            return Bingham_Z(x) * x ** 2 / factor
 
         res = icosphere.integrate(moment_2nd)[:2]
         return res - e[:2]
@@ -345,5 +348,7 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
         return Bingham_Z_
     else:
         icosphere.point_data = {"ODF (points)": Bingham_Z_(icosphere.points)}
-        icosphere.cell_data["triangle"] = {"ODF (cells)": Bingham_Z_(icosphere.centroid())}
+        icosphere.cell_data["triangle"] = {
+            "ODF (cells)": Bingham_Z_(icosphere.centroid())
+        }
         return Bingham_Z_, icosphere
