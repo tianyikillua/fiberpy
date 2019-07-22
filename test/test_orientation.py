@@ -26,18 +26,18 @@ def test_FT_RSC_steady():
 
 
 @pytest.mark.parametrize(
-    "fun_name, ref_value",
+    "fun_name, vectorized, ref_value",
     [
-        ("constant", 4 * np.pi),
-        ("isotropic_orientation", np.eye(3) / 3),
-        ("normal", np.zeros(3)),
+        ("constant", True, 4 * np.pi),
+        ("isotropic_orientation", False, np.eye(3) / 3),
+        ("normal", True, np.zeros(3)),
     ],
 )
-def test_Icosphere(fun_name, ref_value):
+def test_Icosphere(fun_name, vectorized, ref_value):
     icosphere = Icosphere(n_refinement=3)
 
     def fun_constant(x):
-        return 1
+        return np.ones_like(x)
 
     def fun_isotropic_orientation(x):
         return np.outer(x, x) / (4 * np.pi)
@@ -46,7 +46,7 @@ def test_Icosphere(fun_name, ref_value):
         return x
 
     fun = eval("fun_" + fun_name)
-    assert np.allclose(icosphere.integrate(fun), ref_value, rtol=1e-1)
+    assert np.allclose(icosphere.integrate(fun, vectorized=vectorized), ref_value, rtol=1e-1)
 
 
 def test_distribution_function():

@@ -253,7 +253,7 @@ class Icosphere:
                 self.centroid_[i] = np.mean(coord_vertices, axis=0)
             return self.centroid_
 
-    def integrate(self, fun):
+    def integrate(self, fun, vectorized=False):
         """
         Integrate a function defined on the icosphere
 
@@ -261,17 +261,21 @@ class Icosphere:
 
         Args:
             f (callable): Function depending on x
+            vectorized (bool): Whether the given function is vectorized
         """
-        res = 0 * np.asarray(fun(np.array([1, 0, 0])), dtype=float)
-        for i, triangle in enumerate(self.triangles):
-            coord_vertices = self.points[triangle]
-            v0, v1, v2 = coord_vertices[0], coord_vertices[1], coord_vertices[2]
-            x1 = v1 - v0
-            x2 = v2 - v0
-            area = 0.5 * np.linalg.norm(np.cross(x1, x2))
-            fun_centroid = fun(self.centroid()[i])
-            res += fun_centroid * area
-        return res
+        v0 = self.points[self.triangles[:, 0]]
+        v1 = self.points[self.triangles[:, 1]]
+        v2 = self.points[self.triangles[:, 2]]
+        area = 0.5 * np.linalg.norm(np.cross(v1 - v0, v2 - v0), axis=1)
+
+        if vectorized:
+            return np.tensordot(fun(self.centroid()), area, axes=(0, 0))
+        else:
+            res = 0 * np.asarray(fun(np.array([1, 0, 0])), dtype=float)
+            for i in range(len(self.triangles)):
+                fun_centroid = fun(self.centroid()[i])
+                res += fun_centroid * area[i]
+            return res
 
 
 def distribution_function(a, n_refinement=5, return_mesh=False):
@@ -322,12 +326,12 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
         def Bingham_Z(x):
             return Bingham(x, Z)
 
-        factor = icosphere.integrate(Bingham_Z)
+        factor = icosphere.integrate(Bingham_Z, vectorized=True)
 
         def moment_2nd(x):
-            return Bingham_Z(x) * x ** 2 / factor
+            return Bingham_Z(x)[:, None] * x ** 2 / factor
 
-        res = icosphere.integrate(moment_2nd)[:2]
+        res = icosphere.integrate(moment_2nd, vectorized=True)[:2]
         return res - e[:2]
 
     x0 = np.array([1, 0])
@@ -339,7 +343,7 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
     def Bingham_Z(x):
         return Bingham(x, Zv)
 
-    factor = icosphere.integrate(Bingham_Z)
+    factor = icosphere.integrate(Bingham_Z, vectorized=True)
 
     def Bingham_Z_(x):
         return Bingham_Z(x) / factor
