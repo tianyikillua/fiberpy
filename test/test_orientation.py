@@ -46,7 +46,9 @@ def test_Icosphere(fun_name, vectorized, ref_value):
         return x
 
     fun = eval("fun_" + fun_name)
-    assert np.allclose(icosphere.integrate(fun, vectorized=vectorized), ref_value, rtol=1e-1)
+    assert np.allclose(
+        icosphere.integrate(fun, vectorized=vectorized), ref_value, rtol=1e-1
+    )
 
 
 def test_distribution_function():

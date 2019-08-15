@@ -66,7 +66,7 @@ def fiber_orientation(
         kappa (float): Reduction coefficient when using the RSC model, ``0 < kappa <= 1``
         D3 (ndarray of shape (3, )): Coefficients :math:`(D_1,D_2,D_3)` when using the MRD model
         closure (str): 4th-order fiber orientation closure model ``A4_*``, see :py:mod:`fiberpy.closure`
-        method (str): Numerical method to integrate the IVP, see :py:func:`scipy.integrate.solve_ivp`
+        method (str): Numerical method to integrate the IVP, see :py:func:`scipy.integrate.solve_ivp`, or ``julia``
         debug (bool): Return instead the ``sol`` object and ``dadt``
     """
     D_ = 0.5 * (L + L.T)
@@ -106,12 +106,23 @@ def fiber_orientation(
         )
         return dadt_.flatten()
 
-    sol = integrate.solve_ivp(
-        dadt, (t[0], t[-1]), a0_, t_eval=t, method=method, **kwargs
-    )
+    if method != "julia":
+        sol = integrate.solve_ivp(
+            dadt, (t[0], t[-1]), a0_, t_eval=t, method=method, **kwargs
+        )
+        y = sol.y
+    else:
+        from diffeqpy import de
+
+        def dadt_julia(a, p, t):
+            return dadt(t, a)
+
+        prob = de.ODEProblem(dadt_julia, a0_, (t[0], t[-1]))
+        sol = de.solve(prob)
+        y = np.asarray(sol(t))
 
     if not debug:
-        return sol.y
+        return y
     else:
         return sol, dadt
 
