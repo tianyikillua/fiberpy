@@ -367,3 +367,30 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
             "ODF (cells)": Bingham_Z_(icosphere.centroid())
         }
         return Bingham_Z_, icosphere
+
+
+def project_aij(a):
+    """
+    Project fiber orientation tensors to the physical space
+
+    Args:
+        a (array_like of shape (3,)): Principal values of fiber orientation tensor in decreasing order
+    """
+    assert a[0] >= a[1] >= a[2]
+    assert np.isclose(np.sum(a), 1, atol=1e-3)
+    a /= np.sum(a)
+
+    # Physical state
+    if np.all(0 <= a) and np.all(a <= 1):
+        pass
+
+    # Projection according to pg. 132/255 of [Verweyst:1998]
+    elif a[1] > a[0] - 1:
+        a[0] += a[2] / 2
+        a[1] += a[2] / 2
+        a[2] = 0
+    else:
+        a[0] = 1
+        a[1] = a[2] = 0
+
+    return a

@@ -10,6 +10,12 @@ Thermomechanical properties through homogenization
 .. automodule:: fiberpy.mechanics
    :members:
 
+FEA interface for integrative simulations
+-----------------------------------------
+
+.. automodule:: fiberpy.interface
+   :members:
+
 Fiber orientation models
 ------------------------
 

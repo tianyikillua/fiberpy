@@ -23,7 +23,7 @@ setup(
     url="https://github.com/tianyikillua/fiberpy",
     author=about["__author__"],
     author_email=about["__email__"],
-    install_requires=["numpy", "scipy"],
+    install_requires=["numpy", "scipy", "dmsh", "matplotlib"],
     description="Computional methods for fiber-reinforced composites",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",

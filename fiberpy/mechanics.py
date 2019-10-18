@@ -293,7 +293,7 @@ class FiberComposite:
         alphaBar = alphaBar * np.eye(3) + (
             (alpha0 - alpha1) / (1 / K0 - 1 / K1) * (3 * SBar - invKBar * np.eye(3))
         )
-        return alphaBar
+        return np.diag(alphaBar)
 
 
 def lmbda_mu(E, nu):
