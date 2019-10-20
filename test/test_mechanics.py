@@ -295,6 +295,6 @@ def test_elastic_properties(fiber_orientation_type):
 
 
 def test_thermal_properties():
-    alpha = np.diag(fiber.alphaBar(fiber.TandonWeng()))
+    alpha = fiber.alphaBar(fiber.TandonWeng())
     ref = (8.29181165e-06, 5.44419385e-05, 5.44419385e-05)
     assert np.allclose(alpha, ref)
