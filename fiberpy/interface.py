@@ -183,7 +183,8 @@ class OptistructInterface(FEAInterface):
         # Check all composite elements are treated
         if pidset == set(composite_ids):
             assert composite_nelems == pid_mid
-            print("All composite PID " + " ".join(composite_ids) + " treated")
+            composite_ids_str = [str(pid) for pid in composite_ids]
+            print("All composite PID " + " ".join(composite_ids_str) + " treated")
         pid_absent = [str(pid) for pid in list(set(composite_ids) - pidset)]
         if len(pid_absent) > 0:
             print("Composite PID " + " ".join(pid_absent) + " not present in the original file")
