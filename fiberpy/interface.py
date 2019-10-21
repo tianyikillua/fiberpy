@@ -73,12 +73,12 @@ class OptistructInterface(FEAInterface):
         """
 
         # Transform orientations to principal bases
-        print("Processing mapped orientations...")
         composite_ids = list(a_dict.keys())
         composite_nelems = sum([len(a) for a in a_dict.values()])
         eig = {}
         e3_e1 = {}
         for key, a in a_dict.items():
+            print(f"Processing mapped orientations for PID {key:d}...")
             nelems = len(a)
             eig[key] = np.empty((nelems, 3))
             e3_e1[key] = np.empty((nelems, 6))
