@@ -6,47 +6,36 @@ from .mechanics import A2Eij
 from .orientation import project_aij
 
 
-class TUBMesh:
-    """
-    Triangular mesh for the TUB orientation space
-    """
-
-    def __init__(self, h):
-        geo = dmsh.Polygon([[1 / 3, 1 / 3], [1, 0], [0.5, 0.5]])
-        self.points, self.triangles = dmsh.generate(geo, h)
-        self.tri = Triangulation(self.points[:, 0], self.points[:, 1], self.triangles)
-        self.trifinder = self.tri.get_trifinder()
-
-    def centroids(self):
-        centroids = np.empty((len(self.triangles), 2))
-        for i, triangle in enumerate(self.triangles):
-            centroids[i] = np.mean(self.points[triangle], axis=0)
-        return centroids
-
-    def locate(self, points):
-        return self.trifinder(points[:, 0], points[:, 1])
-
-
 class FEAInterface:
     """
     Generic FEA interface for integrative simulations
 
     Args:
-        fiber_composite: Fiber composite object
-        TUB_h (float): Mesh size for the TUB orientation space
+        fiber_composite (:py:mod:`fiberpy.mechanics.FiberComposite`): Fiber-reinforced composite
+        mesh_size (float): Mesh size for the TUB orientation space
     """
-    def __init__(self, fiber_composite, TUB_h):
+    def __init__(self, fiber_composite, mesh_size):
         self.fiber_composite = fiber_composite
-        self.mesh = TUBMesh(TUB_h)
+        self._set_TUB(mesh_size)
 
-    def ABarTUB(self):
+    def _set_TUB(self, mesh_size):
+        geo = dmsh.Polygon([[1 / 3, 1 / 3], [1, 0], [0.5, 0.5]])
+        points, triangles = dmsh.generate(geo, mesh_size)
+        self._centroids = np.empty((len(triangles), 2))
+        for i, triangle in enumerate(triangles):
+            self._centroids[i] = np.mean(points[triangle], axis=0)
+
+        tri = Triangulation(points[:, 0], points[:, 1], triangles)
+        self._trifinder = tri.get_trifinder()
+
+    def ABar_alphaBar(self):
         """
         Calculate the effective elasticity and thermal dilatation tensors on
         the TUB orientation space
         """
-        ABar = np.empty((len(self.mesh.triangles), 6, 6))
-        alphaBar = np.empty((len(ABar), 3))
-        for i, a in enumerate(self.mesh.centroids()):
+        ABar = np.empty((len(self._centroids), 6, 6))
+        alphaBar = np.empty((len(self._centroids), 3))
+        for i, a in enumerate(self._centroids):
             ABar[i, :, :] = self.fiber_composite.ABar(
                 np.array([a[0], a[1], 1 - a[0] - a[1]])
             )
@@ -54,14 +43,14 @@ class FEAInterface:
 
         return ABar, alphaBar
 
-    def locate(self, a):
+    def locate_orientation(self, a):
         """
-        Locate the element in TUB containing the given fiber orientation
+        Locate the element in the TUB orientation space containing the given fiber orientation
 
         Args:
             a (ndarray of shape (n, 3)): Principal values of fiber orientation tensor in decreasing order
         """
-        return self.mesh.locate(a[:, :2])
+        return self._trifinder(a[:, 0], a[:, 1])
 
 
 class OptistructInterface(FEAInterface):
@@ -71,6 +60,10 @@ class OptistructInterface(FEAInterface):
     def generate(self, a_dict, infile, outfile):
         """
         Generate an integrative simulation file for Altair Optistruct
+
+        Composite materials and elements are identified by their same PID / MID defined in the original file.
+        They are given by the keys of the ``a_dict`` dictionary. All non-composite elements will conserve
+        their properties but with a new PID / MID.
 
         Args:
             a_dict (dict): Mapped fiber orientation tensor for given elements associated with PID / MID as keys.
@@ -108,7 +101,7 @@ class OptistructInterface(FEAInterface):
         mid_dict = {}
         midset = set()
         for key in composite_ids:
-            mid_dict[key] = self.locate(eig[key]) + 1
+            mid_dict[key] = self.locate_orientation(eig[key]) + 1
             midset = midset.union(set(mid_dict[key]))
 
         # Read PSOLID info
@@ -117,24 +110,26 @@ class OptistructInterface(FEAInterface):
 
         # Compute needed ABar and alphaBar on TUB
         print("Computing MAT9ORT cards...")
-        ABar, alphaBar = self.ABarTUB()
+        ABar, alphaBar = self.ABar_alphaBar()
 
         # Here we begins
         print("Reading and generating FEA file...")
         infile_fh = open(infile, "r")
         outfile_fh = open(outfile, "w")
 
-        pid_mid = 0
-        composite_ind = {}
+        pid_mid = 0  # running PID/MID for all composite elements
+        pidset = set()  # PID present in the original file
+        composite_ind = {}  # relative index for each composite material
         for key in composite_ids:
             composite_ind[key] = 0
-
         materials_written = False
+
         for line in infile_fh:
             keyword = line[0:8].strip()
             # Elements
             if keyword == "CHEXA" or keyword == "CTETRA":
                 pid = int(line[16:24])
+                pidset = pidset.union(set([pid]))
                 if pid in composite_ids:
                     ind = composite_ind[pid]
                     mid_ = mid_dict[pid]
@@ -186,13 +181,22 @@ class OptistructInterface(FEAInterface):
                 outfile_fh.write(line)
 
         # Check all composite elements are treated
-        assert composite_nelems == pid_mid
+        if pidset == set(composite_ids):
+            assert composite_nelems == pid_mid
+            print("All composite PID " + " ".join(composite_ids) + " treated")
+        pid_absent = [str(pid) for pid in list(set(composite_ids) - pidset)]
+        if len(pid_absent) > 0:
+            print("Composite PID " + " ".join(pid_absent) + " not present in the original file")
+        pid_isotropic = [str(pid) for pid in list(pidset - set(composite_ids))]
+        if len(pid_isotropic) > 0:
+            print("Non-composite PID " + " ".join(pid_isotropic) + " skipped")
 
         infile_fh.close()
         outfile_fh.close()
 
         # Create a file without COO
         self._comment_CORD2R(outfile)
+        print("Integrative simulation file sucessfully generated")
 
     def _read_PSOLID(self, composite_ids, infile):
         """

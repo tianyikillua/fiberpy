@@ -13,8 +13,7 @@ from .tensor import Mat4
 
 class FiberComposite:
     """
-    Class for computing homogenized properties of a fiber-reinforced
-    composite
+    Fiber-reinforced composite
 
     Args:
         rve_data (dict): Dictionary defining the microstructure
