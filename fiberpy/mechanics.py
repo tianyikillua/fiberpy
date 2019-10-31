@@ -39,20 +39,25 @@ class FiberComposite:
         self.ar = self.rve_data["aspect_ratio"]
 
         # Volume fraction of fibers
+        self.rho = self.rve_data.get("rho", None)
+        self.rho0 = self.rve_data.get("rho0", None)
+        self.rho1 = self.rve_data.get("rho1", None)
+
         if "vf" in self.rve_data:
             self.vf = self.rve_data["vf"]
         else:
             assert "mf" in self.rve_data
             mf = self.rve_data["mf"]
-            assert "rho1" in self.rve_data
-            rho1 = self.rve_data["rho1"]
-            if "rho0" in self.rve_data:
-                rho0 = self.rve_data["rho0"]
-            else:
-                assert "rho" in self.rve_data
-                rho = self.rve_data["rho"]
-                rho0 = (1 - mf) * rho * rho1 / (rho1 - rho * mf)
-            self.vf = mf * rho0 / (mf * rho0 + (1 - mf) * rho1)
+            assert self.rho1 is not None
+            if self.rho0 is None:
+                assert self.rho is not None
+                self.rho0 = (1 - mf) * self.rho * self.rho1 / (self.rho1 - self.rho * mf)
+            self.vf = mf * self.rho0 / (mf * self.rho0 + (1 - mf) * self.rho1)
+
+        # Composite density
+        if self.rho is None:
+            if self.rho0 is not None and self.rho1 is not None:
+                self.rho = self.vBar(self.rho0, self.rho1)
 
     def vBar(self, x0, x1):
         """
