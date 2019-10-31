@@ -14,6 +14,7 @@ class FEAInterface:
         fiber_composite (:py:mod:`fiberpy.mechanics.FiberComposite`): Fiber-reinforced composite
         mesh_size (float): Mesh size for the TUB orientation space
     """
+
     def __init__(self, fiber_composite, mesh_size):
         self.fiber_composite = fiber_composite
         self._set_TUB(mesh_size)
@@ -57,6 +58,7 @@ class OptistructInterface(FEAInterface):
     """
     FEA interface for Altair Optistruct
     """
+
     def generate(self, a_dict, infile, outfile):
         """
         Generate an integrative simulation file for Altair Optistruct
@@ -111,6 +113,7 @@ class OptistructInterface(FEAInterface):
         # Compute needed ABar and alphaBar on TUB
         print("Computing MAT9ORT cards...")
         ABar, alphaBar = self.ABar_alphaBar()
+        rho = self.fiber_composite.rho
 
         # Here we begins
         print("Reading and generating FEA file...")
@@ -146,6 +149,11 @@ class OptistructInterface(FEAInterface):
                     line = line[:16] + f"{composite_nelems + pid:8d}" + line[24:]
                 outfile_fh.write(line)
 
+            elif keyword.startswith("CTRIA") or keyword.startswith("CQUAD"):
+                pid = int(line[16:24])
+                line = line[:16] + f"{composite_nelems + pid:8d}" + line[24:]
+                outfile_fh.write(line)
+
             # Properties
             elif keyword == "PSOLID":
                 pid = int(line[8:16])
@@ -161,6 +169,17 @@ class OptistructInterface(FEAInterface):
                     )
                     outfile_fh.write(line)
 
+            elif keyword == "PSHELL":
+                pid = int(line[8:16])
+                mid = int(line[16:24])
+                line = (
+                    line[:8]
+                    + f"{composite_nelems + pid:8d}"
+                    + f"{composite_nelems + mid:8d}"
+                    + line[24:]
+                )
+                outfile_fh.write(line)
+
             # Materials
             elif keyword == "MAT1":
                 mid = int(line[8:16])
@@ -174,7 +193,7 @@ class OptistructInterface(FEAInterface):
                         mid = i + 1
                         if mid in midset:
                             self._write_MAT9ORT(
-                                ABar[i], mid, alpha=alphaBar[i], fh=outfile_fh
+                                ABar[i], mid, rho=rho, alpha=alphaBar[i], fh=outfile_fh
                             )
                     materials_written = True
             else:
@@ -187,7 +206,11 @@ class OptistructInterface(FEAInterface):
             print("All composite PID " + " ".join(composite_ids_str) + " treated")
         pid_absent = [str(pid) for pid in list(set(composite_ids) - pidset)]
         if len(pid_absent) > 0:
-            print("Composite PID " + " ".join(pid_absent) + " not present in the original file")
+            print(
+                "Composite PID "
+                + " ".join(pid_absent)
+                + " not present in the original file"
+            )
         pid_isotropic = [str(pid) for pid in list(pidset - set(composite_ids))]
         if len(pid_isotropic) > 0:
             print("Non-composite PID " + " ".join(pid_isotropic) + " skipped")
