@@ -250,20 +250,20 @@ class OptistructInterface(FEAInterface):
             return [f"{x:g}" for x in Eij[a:b]]
 
         line = (
-            "MAT9ORT, "
-            + f"{mid:d}, "
-            + ", ".join(str_Eij(b=3))
-            + ", "
-            + ", ".join(str_Eij(6, 9))
+            "MAT9ORT,"
+            + f"{mid:d},"
+            + ",".join(str_Eij(b=3))
+            + ","
+            + ",".join(str_Eij(6, 9))
         )
         print(line, end="", file=fh)
         if rho is not None:
-            print(f", {rho:g}", end="", file=fh)
+            print(f",{rho:g}", end="", file=fh)
         print("", file=fh)
-        line = "," + ", ".join(str_Eij(3, 6))
+        line = "," + ",".join(str_Eij(3, 6))
         print(line, end="", file=fh)
         if alpha is not None:
-            print(", " + ", ".join([f"{x:g}" for x in alpha]), end="", file=fh)
+            print("," + ",".join([f"{x:g}" for x in alpha]), end="", file=fh)
         print("", file=fh)
 
     def _write_PSOLID(self, pid, mid, cordm, info, fh=None):
@@ -280,9 +280,9 @@ class OptistructInterface(FEAInterface):
         def str_e(a=None, b=None):
             return [f"{x:g}" for x in e3_e1[a:b]]
 
-        line = "CORD2R, " + f"{cid:d},, 0, 0, 0, " + ", ".join(str_e(b=3))
+        line = "CORD2R," + f"{cid:d},,0,0,0," + ",".join(str_e(b=3))
         print(line, file=fh)
-        line = ", " + ", ".join(str_e(a=3, b=6))
+        line = "," + ",".join(str_e(a=3, b=6))
         print(line, file=fh)
 
     def _comment_CORD2R(self, infile):
