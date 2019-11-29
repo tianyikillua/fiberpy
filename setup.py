@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-#
-import codecs
 import os
 
 from setuptools import find_packages, setup
@@ -12,10 +9,6 @@ with open(os.path.join(base_dir, "fiberpy", "__about__.py"), "rb") as f:
     exec(f.read(), about)
 
 
-def read(fname):
-    return codecs.open(os.path.join(base_dir, fname), encoding="utf-8").read()
-
-
 setup(
     name="fiberpy",
     version=about["__version__"],
@@ -25,7 +18,7 @@ setup(
     author_email=about["__email__"],
     install_requires=["numpy", "scipy", "dmsh", "matplotlib"],
     description="Computional methods for fiber-reinforced composites",
-    long_description=read("README.md"),
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     license=about["__license__"],
     classifiers=[
