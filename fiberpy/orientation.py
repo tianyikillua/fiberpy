@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import integrate, optimize
+from meshio import CellBlock
 
 from .closure import (
     A4_exact,
@@ -71,7 +72,7 @@ def fiber_orientation(
     """
     D_ = 0.5 * (L + L.T)
     W_ = 0.5 * (L - L.T)
-    lmbda = (ar ** 2 - 1) / (ar ** 2 + 1)
+    lmbda = (ar**2 - 1) / (ar**2 + 1)
     gamma = np.sqrt(2) * np.linalg.norm(D_)
     a0_ = a0.flatten()
 
@@ -225,10 +226,12 @@ class Icosphere:
 
         self.triangles = triangles
         self.points = points
-        self.cells = {"triangle": triangles}
+        self.cells = [CellBlock("triangle", triangles)]
         self.point_data = {}
         self.cell_data = {}
         self.field_data = {}
+        self.point_sets = {}
+        self.cell_sets = {}
 
     def equal_earth_projection(self):
         """
@@ -245,10 +248,10 @@ class Icosphere:
         A3 = 0.000893
         A4 = 0.003796
         denominator = 3 * (
-            A1 + 3 * A2 * theta_ ** 2 + theta_ ** 6 * (7 * A3 + 9 * A4 * theta_ ** 2)
+            A1 + 3 * A2 * theta_**2 + theta_**6 * (7 * A3 + 9 * A4 * theta_**2)
         )
         x = 2 * np.sqrt(3) * longitude * np.cos(theta_) / denominator
-        y = theta_ * (A1 + A2 * theta_ ** 2 + theta_ ** 6 * (A3 + A4 * theta_ ** 2))
+        y = theta_ * (A1 + A2 * theta_**2 + theta_**6 * (A3 + A4 * theta_**2))
         return x, y
 
     def centroid(self):
@@ -340,7 +343,7 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
         factor = icosphere.integrate(Bingham_Z, vectorized=True)
 
         def moment_2nd(x):
-            return Bingham_Z(x)[:, None] * x ** 2 / factor
+            return Bingham_Z(x)[:, None] * x**2 / factor
 
         res = icosphere.integrate(moment_2nd, vectorized=True)[:2]
         return res - e[:2]
@@ -362,10 +365,8 @@ def distribution_function(a, n_refinement=5, return_mesh=False):
     if not return_mesh:
         return Bingham_Z_
     else:
-        icosphere.point_data = {"ODF (points)": Bingham_Z_(icosphere.points)}
-        icosphere.cell_data["triangle"] = {
-            "ODF (cells)": Bingham_Z_(icosphere.centroid())
-        }
+        icosphere.point_data["ODF (points)"] = Bingham_Z_(icosphere.points)
+        icosphere.cell_data["ODF (cells)"] = [Bingham_Z_(icosphere.centroid())]
         return Bingham_Z_, icosphere
 
 
