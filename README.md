@@ -1,11 +1,6 @@
 # Computational methods for fiber-reinforced composites
 
-[![travis](https://img.shields.io/travis/tianyikillua/fiberpy.svg?style=flat-square)](https://travis-ci.org/tianyikillua/fiberpy)
-[![codecov](https://img.shields.io/codecov/c/github/tianyikillua/fiberpy.svg?style=flat-square)](https://codecov.io/gh/tianyikillua/fiberpy)
-[![readthedocs](https://readthedocs.org/projects/fiberpy/badge/?version=latest&style=flat-square)](https://readthedocs.org/projects/fiberpy/?badge=latest)
-[![pypi](https://img.shields.io/pypi/v/fiberpy.svg?style=flat-square)](https://pypi.org/project/fiberpy)
-
-This package provides several computational models for fiber-reinforced composites (thermoplastics reiforced by glass fibers, for instance).
+This package provides several computational models for fiber-reinforced composites (thermoplastics reinforced by glass fibers, for instance).
 
 - Compute the 4th-order fiber orientation tensor from the 2nd-order one (linear, quadratic, hybrid, orthotropic closure models...)
 - Compute the effective thermomechanical properties from the microstructure definition (Mori-Tanaka, orientation averaging...)
@@ -15,24 +10,24 @@ This package provides several computational models for fiber-reinforced composit
   <img src="https://user-images.githubusercontent.com/4027283/60251521-f4d52000-98c8-11e9-804e-e3a1d031286d.png" width="800">
 </p>
 
-Some notebook examples can be found in `examples`.
-
 Documentation is available [here](https://fiberpy.readthedocs.io).
 
-### Installation
+## Installation
 
-To install `fiberpy`, you are invited to use `pip` and its associated options
-```
+To install `fiberpy`, run
+
+```sh
 pip install -U fiberpy
 ```
 
-### Testing
+## Testing
 
-To run the `fiberpy` unit tests, check out this repository and type
-```
+To run the `fiberpy` unit tests, run
+
+```sh
 pytest
 ```
 
-### License
+## License
 
 `fiberpy` is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).

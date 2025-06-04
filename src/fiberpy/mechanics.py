@@ -35,8 +35,15 @@ class FiberComposite:
         Parse a RVE data defining the microstructure
         """
         self.E0, self.nu0 = self.get(["E0", "nu0"])
-        self.E1, self.nu1 = self.get(["E1", "nu1"])
         self.ar = self.rve_data["aspect_ratio"]
+
+        # Elasticity tensors
+        self.C0 = AIsotropic(self.E0, self.nu0)
+        if "C1" in self.rve_data:
+            self.C1 = self.rve_data["C1"]
+        else:
+            self.E1, self.nu1 = self.get(["E1", "nu1"])
+            self.C1 = AIsotropic(self.E1, self.nu1)
 
         # Volume fraction of fibers
         self.rho = self.rve_data.get("rho", None)
@@ -51,7 +58,9 @@ class FiberComposite:
             assert self.rho1 is not None
             if self.rho0 is None:
                 assert self.rho is not None
-                self.rho0 = (1 - mf) * self.rho * self.rho1 / (self.rho1 - self.rho * mf)
+                self.rho0 = (
+                    (1 - mf) * self.rho * self.rho1 / (self.rho1 - self.rho * mf)
+                )
             self.vf = mf * self.rho0 / (mf * self.rho0 + (1 - mf) * self.rho1)
 
         # Composite density
@@ -72,7 +81,7 @@ class FiberComposite:
         References:
             Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
         """
-        asq = self.ar ** 2
+        asq = self.ar**2
         asm1 = asq - 1
         hnu = 1 / (2 * (1 - self.nu0))
         q = self.ar / asm1 ** (3 / 2) * (self.ar * np.sqrt(asm1) - np.arccosh(self.ar))
@@ -129,12 +138,10 @@ class FiberComposite:
             eye = np.eye(6)
             return np.linalg.inv(eye + E @ S0 @ (C1 - C0))
 
-        C0 = AIsotropic(self.E0, self.nu0)
-        C1 = AIsotropic(self.E1, self.nu1)
         eye = np.eye(6)
         E = Mat4(self.Eshelby())
-        B = H(E, C0, C1)
-        UD = (self.vf * C1 @ B + (1 - self.vf) * C0) @ (
+        B = H(E, self.C0, self.C1)
+        UD = (self.vf * self.C1 @ B + (1 - self.vf) * self.C0) @ (
             np.linalg.inv(self.vf * B + (1 - self.vf) * eye)
         )
         return UD
