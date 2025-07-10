@@ -37,7 +37,7 @@ class FiberComposite:
         self.E0, self.nu0 = self.get(["E0", "nu0"])
         self.ar = self.rve_data["aspect_ratio"]
 
-        # Elasticity tensors
+        # Stiffness tensors
         self.C0 = AIsotropic(self.E0, self.nu0)
         if "C1" in self.rve_data:
             self.C1 = self.rve_data["C1"]
@@ -121,26 +121,47 @@ class FiberComposite:
         )
         return E
 
+    def _H(self, E, C0, C1, inv=True):
+        """
+        Strain concentration tensor relating the strain in the inclusion to that
+        in the matrix
+        """
+        S0 = np.linalg.inv(C0)
+        eye = np.eye(6)
+        B_inv = eye + E @ (S0 @ C1 - eye)
+        if inv:
+            return np.linalg.inv(B_inv)
+        else:
+            return B_inv
+
     def MoriTanaka(self):
         r"""
-        Elasticity tensor for a unidirectional RVE using the
-        original Mori-Tanaka formulation
+        Unidirectional stiffness tensor using the Mori-Tanaka formulation
 
         Returns:
-            array of shape (6, 6): Elasticity tensor using the :math:`(\phi, \phi)` bases
+            array of shape (6, 6): Stiffness tensor using the :math:`(\phi, \phi)` bases
         """
-
-        def H(E, C0, C1):
-            """
-            Concentration tensor H (= B according to the M-T model)
-            """
-            S0 = np.linalg.inv(C0)
-            eye = np.eye(6)
-            return np.linalg.inv(eye + E @ S0 @ (C1 - C0))
-
         eye = np.eye(6)
         E = Mat4(self.Eshelby())
-        B = H(E, self.C0, self.C1)
+        B = self._H(E, self.C0, self.C1)
+        UD = (self.vf * self.C1 @ B + (1 - self.vf) * self.C0) @ (
+            np.linalg.inv(self.vf * B + (1 - self.vf) * eye)
+        )
+        return UD
+
+    def Balanced(self):
+        r"""
+        Unidirectional stiffness tensor using the balanced formulation
+
+        Returns:
+            array of shape (6, 6): Stiffness tensor using the :math:`(\phi, \phi)` bases
+        """
+        eye = np.eye(6)
+        E = Mat4(self.Eshelby())
+        B1_inv = self._H(E, self.C0, self.C1, inv=False)
+        B2_inv = self._H(E, self.C1, self.C0, inv=False)
+        phi = 0.5 * self.vf * (1 + self.vf)
+        B = np.linalg.inv((1 - phi) * B1_inv + phi * B2_inv)
         UD = (self.vf * self.C1 @ B + (1 - self.vf) * self.C0) @ (
             np.linalg.inv(self.vf * B + (1 - self.vf) * eye)
         )
@@ -148,11 +169,10 @@ class FiberComposite:
 
     def TandonWeng(self):
         r"""
-        Elasticity tensor for a unidirectional RVE using
-        Tandon-Weng's equations
+        Unidirectional stiffness tensor using Tandon-Weng's equations
 
         Returns:
-            array of shape (6, 6): Elasticity tensor using the :math:`(\phi, \phi)` bases
+            array of shape (6, 6): Stiffness tensor using the :math:`(\phi, \phi)` bases
 
         References:
             Tandon, G. P. & Weng, G. J. The effect of aspect ratio of inclusions on the elastic properties of unidirectionally aligned composites. Polymer Composites, Wiley Online Library, 1984, 5, 327-333
@@ -228,7 +248,7 @@ class FiberComposite:
 
     def ABar(self, a, model="TandonWeng", closure="orthotropic", recompute_UD=False):
         r"""
-        Homogenized elasticity tensor in the principal frame
+        Homogenized Stiffness tensor in the principal frame
 
         Args:
             a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
@@ -237,7 +257,7 @@ class FiberComposite:
             recompute_UD (bool): Whether force recomputing elastic properties of the unidirectional RVE
 
         Returns:
-            array of shape (6, 6): Effective elasticity tensor using the :math:`(\phi_2, \phi)` bases
+            array of shape (6, 6): Effective Stiffness tensor using the :math:`(\phi_2, \phi)` bases
 
         References:
             Advani, S. G. & Tucker III, C. L. The use of tensors to describe and predict fiber orientation in short fiber composites. Journal of Rheology, SOR, 1987, 31, 751-784
@@ -285,7 +305,7 @@ class FiberComposite:
         Homogenized thermal expansion coefficients in the principal frame
 
         Args:
-            ABar (array_like of shape (6, 6)): Elasticity tensor
+            ABar (array_like of shape (6, 6)): Stiffness tensor
 
         Returns:
             array of shape (3, 3): Effective thermal dilatation coefficient matrix
@@ -325,14 +345,14 @@ def bulk_modulus(E, nu):
 
 def AIsotropic(E, nu):
     r"""
-    Isotropic elasticity tensor given in the :math:`(\phi, \phi)` bases
+    Isotropic stiffness tensor given in the :math:`(\phi, \phi)` bases
 
     Args:
         E (float): Young's modulus
         nu (float): Poisson coefficient
 
     Returns:
-        array of shape (6, 6): Elasticity tensor
+        array of shape (6, 6): Stiffness tensor
     """
     lmbda, mu = lmbda_mu(E, nu)
     A = np.array(
@@ -352,16 +372,16 @@ def AIsotropic(E, nu):
 
 def A2Eij(A):
     r"""
-    Calculate the orthotropic moduli from an elasticity tensor
+    Calculate the orthotropic moduli from stiffness tensors
     written using the :math:`(\phi_2, \phi)` bases
 
     Args:
-        A (array_like of shape (6, 6)): Elasticity tensor
+        A (array_like of shape (6, 6)): Stiffness tensor
 
     Returns:
         :math:`(E_1, E_2, E_3, \mu_{12}, \mu_{23}, \mu_{13}, \nu_{12}, \nu_{23}, \nu_{31})`
     """
-    assert A.shape == (6, 6), "Elasticity tensor A is not 6 by 6"
+    assert A.shape == (6, 6), "Stiffness tensor A is not 6 by 6"
     S = np.linalg.inv(A)
     E1 = 1 / S[0, 0]
     E2 = 1 / S[1, 1]
