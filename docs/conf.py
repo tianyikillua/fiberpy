@@ -47,9 +47,9 @@ myst_url_schemes = ("http", "https", "mailto")
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_book_theme"
-html_title = "tensorconvert"
+html_title = "fiberpy"
 html_static_path = ["_static"]
 html_theme_options = {
-    "repository_url": "https://github.com/tianyikillua/tensorconvert",
+    "repository_url": "https://github.com/tianyikillua/fiberpy",
     "use_repository_button": True,
 }

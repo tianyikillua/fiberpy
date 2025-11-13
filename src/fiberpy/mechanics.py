@@ -1,12 +1,12 @@
 import numpy as np
 
 from .closure import (
-    A4_exact,
-    A4_hybrid,
-    A4_invariants,
-    A4_linear,
-    A4_orthotropic,
-    A4_quadratic,
+    A4_exact,  # noqa: F401
+    A4_hybrid,  # noqa: F401
+    A4_invariants,  # noqa: F401
+    A4_linear,  # noqa: F401
+    A4_orthotropic,  # noqa: F401
+    A4_quadratic,  # noqa: F401
 )
 from .tensor import Mat4
 
@@ -252,7 +252,7 @@ class FiberComposite:
 
         Args:
             a (array_like of shape (3,)): Principal values of the 2nd fiber orientation tensor, ``a[0] >= a[1] >= a[2]``
-            model (str): Micromechanical model for the unidirectional RVE (``TandonWeng`` or ``MoriTanaka``)
+            model (str): Micromechanical model for the unidirectional RVE ("TandonWeng", "MoriTanaka" or "Balanced")
             closure (str): 4th-order fiber orientation closure model ``A4_*``, see :py:mod:`fiberpy.closure`
             recompute_UD (bool): Whether force recomputing elastic properties of the unidirectional RVE
 
@@ -269,6 +269,8 @@ class FiberComposite:
                 self.UD = self.TandonWeng()
             elif model == "MoriTanaka":
                 self.UD = self.MoriTanaka()
+            elif model == "Balanced":
+                self.UD = self.Balanced()
 
         # Constants from UD
         B1 = self.UD[0, 0] + self.UD[1, 1] - 2 * self.UD[0, 1] - 2 * self.UD[3, 3]

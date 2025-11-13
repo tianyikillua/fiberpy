@@ -1,14 +1,14 @@
 import numpy as np
-from scipy import integrate, optimize
 from meshio import CellBlock
+from scipy import integrate, optimize
 
 from .closure import (
-    A4_exact,
-    A4_hybrid,
-    A4_invariants,
-    A4_linear,
-    A4_orthotropic,
-    A4_quadratic,
+    A4_exact,  # noqa: F401
+    A4_hybrid,  # noqa: F401
+    A4_invariants,  # noqa: F401
+    A4_linear,  # noqa: F401
+    A4_orthotropic,  # noqa: F401
+    A4_quadratic,  # noqa: F401
 )
 from .tensor import Mat2
 
@@ -52,7 +52,7 @@ def fiber_orientation(
     closure="orthotropic",
     method="RK45",
     debug=False,
-    **kwargs
+    **kwargs,
 ):
     """
     Compute fiber orientation tensor evolution using the Folgar-Tucker model
