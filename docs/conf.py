@@ -41,7 +41,7 @@ myst_enable_extensions = [
 myst_url_schemes = ("http", "https", "mailto")
 
 # myst_nb
-# nb_execution_mode = "off"
+nb_execution_mode = "off"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
