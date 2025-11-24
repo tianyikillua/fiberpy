@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fiberpy"
-version = "0.2.2"
+version = "0.2.3"
 description = "Computional methods for fiber-reinforced composites"
 readme = "README.md"
 authors = [
@@ -17,7 +17,7 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
 ]
-dependencies = ["numpy", "scipy", "meshio"]
+dependencies = ["numpy", "scipy", "meshio", "mpmath"]
 
 [project.urls]
 "Homepage" = "https://github.com/tianyikillua/fiberpy"
